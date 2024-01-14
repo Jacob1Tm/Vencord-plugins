@@ -72,7 +72,6 @@ export default definePlugin({
             },
         ],
         execute(args) {
-            console.log(args);
             const query = encodeURIComponent(args[1].value);
             // todo
             // if (args.length === 1) {
