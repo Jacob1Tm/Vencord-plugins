@@ -38,7 +38,7 @@ export default definePlugin({
         ],
 
         execute(args) {
-            const query = args[0].value.replace(" ", "+");
+            const query = encodeURIComponent(args[0].value);
             let link = "https://letmegooglethat.com/?q=" + query;
             return {
                 content: link
