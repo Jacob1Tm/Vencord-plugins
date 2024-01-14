@@ -73,7 +73,7 @@ export default definePlugin({
         ],
         execute(args) {
             console.log(args);
-            const query = args[1].value.replace(" ", "+");
+            const query = encodeURIComponent(args[1].value);
             // todo
             // if (args.length === 1) {
             //     return {
