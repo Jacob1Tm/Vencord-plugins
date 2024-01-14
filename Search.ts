@@ -1,6 +1,6 @@
 /*
  * Vencord, a modification for Discord's desktop app
- * Copyright (c) 2023 Vendicated and contributors
+ * Copyright (c) 2024 Vendicated and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,41 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import {ApplicationCommandOptionType} from "@api/Commands";
+import { ApplicationCommandOptionType } from "@api/Commands";
+import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
-import definePlugin from "@utils/types";
+import definePlugin, { OptionType } from "@utils/types";
+
+const searchEngineChoices = [
+    { name: "Google", value: "google.com", label: "Google" },
+    { name: "Bing", value: "bing.com", label: "Bing" },
+    { name: "DuckDuckGo", value: "duckduckgo.com", label: "DuckDuckGo" },
+    { name: "searX", value: "searx.thegpm.org", label: "searX (instance searx.thegpm.org)" },
+    { name: "StartPage", value: "startpage.com", label: "StartPage" },
+    { name: "Yandex", value: "yandex.com", label: "Yandex" },
+    { name: "Custom", value: "custom", label: "Custom" }
+];
+
+export const settings = definePluginSettings({
+    // defaultSearchEngine: {
+    //     type: OptionType.SELECT,
+    //     description: "Select your default search engine.",
+    //     default: "google.com",
+    //     options: searchEngineChoices
+    // },
+    customSearchEngine: {
+        type: OptionType.STRING,
+        description: "Enter the URL of your custom search engine. (make sure it supports the q= query parameter)",
+        default: "example.com",
+        restartNeeded: false
+    }
+});
+
 
 export default definePlugin({
     name: "Search",
     authors: [Devs.JacobTm],
+    settings,
     description: "Generates search links for various search engines.",
     dependencies: ["CommandsAPI"],
     commands: [{
@@ -31,43 +59,39 @@ export default definePlugin({
         options: [
             {
                 type: ApplicationCommandOptionType.STRING,
+                name: "Search engine",
+                description: "Which search engine do you want to use?",
+                required: true,
+                choices: searchEngineChoices,
+            },
+            {
+                type: ApplicationCommandOptionType.STRING,
                 name: "Search query",
                 description: "What do you want to search?",
                 required: true
             },
-            {
-                type: ApplicationCommandOptionType.STRING,
-                name: "Search engine",
-                description: "Which search engine do you want to use?",
-                required: true,
-                choices: [
-                    { name: "Google", value: "google.com", label: "Google search engine" },
-                    { name: "Bing", value: "bing.com", label: "Bing search engine" },
-                    { name: "DuckDuckGo", value: "duckduckgo.com", label: "DuckDuckGo private search engine" },
-                    { name: "searX", value: "searx.thegpm.org", label: "searX private search engine" },
-                    { name: "StartPage", value: "startpage.com", label: "StartPage private search engine" },
-                    //why i added this? idk
-                    { name: "Yandex", value: "yandex.com", label: "Yandex search engine" },
-                    //there should be a way to add custom search engines, but it fucks up everything
-                    //more maybe added in the future
-                ],
-            }
         ],
         execute(args) {
-            const query = args[0].value.replace(" ", "+");
-            //cause google is weird
-            switch (args[1].value) {
-                case "google.com":
-                    const link = "https://google.com/search?q=" + query;
-                    return {
-                        content: link
-                    }
-                default: {
-                    const link = "https://" + args[1].value + "/?q=" + query;
-                    return {
-                        content: link
-                    };
-                }
+            console.log(args);
+            const query = args[1].value.replace(" ", "+");
+            // todo
+            // if (args.length === 1) {
+            //     return {
+            //         content: `https://${settings.store.defaultSearchEngine}/?q=${query}`
+            //     };
+            // }
+            if (args[0].value === "google.com") {
+                return {
+                    content: `https://google.com/search?q=${query}`
+                };
+            } else if (args[0].value === "custom") {
+                return {
+                    content: `https://${settings.store.customSearchEngine}/?q=${query}`
+                };
+            } else {
+                return {
+                    content: `https://${args[0].value}/?q=${query}`
+                };
             }
         }
     }],
